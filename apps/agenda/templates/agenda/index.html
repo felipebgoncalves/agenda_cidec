@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>CIDEC - Agenda do Centro de Inteligencia de Defesa Civil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="150">
+
+
+  <!-- FullCalendar -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
+
+  <!-- CSS da página -->
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<header class="page-header">
+  <div>
+    <div class="page-header-title">Sistema de Agendamento do Centro de Inteligencia de Defesa Civil – CIDEC</div>
+    <div class="page-header-sub">Uso compartilhado dos espaços do CIDEC</div>
+  </div>
+  <button id="btnAcessoInterno" class="btn-secundario">Acesso interno</button>
+</header>
+
+<main class="calendar-wrapper">
+  <div class="top-bar">
+    <div>
+      <h2>Agenda de Ambientes</h2>
+      <div class="legenda">
+        <span><span class="badge badge-pendente"></span> Solicitação em análise</span>
+        <span><span class="badge badge-aprovada"></span> Reserva confirmada</span>
+        <span><span class="badge badge-livre"></span> Ausência de marcação = disponível</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <select id="filtroAmbienteAgenda">
+        <option value="AUDITORIO">Auditório</option>
+        <option value="CENTRO_OPERACOES">Centro de Operações</option>
+        <option value="SALA_CRISE">Sala de Crise</option>
+      </select>
+      <button id="btnAbrirModal" class="btn-primario">+ Nova solicitação</button>
+    </div>
+  </div>
+
+  <div id="calendar"></div>
+</main>
+
+<!-- Modal de NOVA SOLICITAÇÃO -->
+<div id="modalReserva" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Nova Solicitação de Uso de Ambiente do CAT/CBMES</h3>
+      <button id="btnFecharModal" class="modal-close">&times;</button>
+    </div>
+
+    <p class="modal-sub">
+      Escolha a data e o período desejados e preencha os dados abaixo. Sua solicitação será analisada pela equipe do CAT/CBMES.
+    </p>
+
+    <form id="formReserva" class="form-grid">
+      <div class="form-group">
+        <label>Ambiente *</label>
+        <select name="ambiente" id="selectAmbienteReserva" required>
+          <option value="AUDITORIO">Auditório</option>
+          <option value="CENTRO_OPERACOES">Centro de Operações</option>
+          <option value="SALA_CRISE">Sala de Crise</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de solicitação *</label>
+        <select name="tipo_solicitacao" required>
+          <option value="">Selecione</option>
+          <option value="INTERNA">Interna (CBMES)</option>
+          <option value="EXTERNA">Externa (demais órgãos)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Setor/ Órgão / Instituição solicitante *</label>
+        <input required name="instituicao" />
+      </div>
+
+      <div class="form-group">
+        <label>Responsável *</label>
+        <input required name="responsavel" />
+      </div>
+
+      <div class="form-group">
+        <label>E-mail de contato *</label>
+        <input required type="email" name="email" />
+      </div>
+
+      <div class="form-group">
+        <label>Telefone / WhatsApp *</label>
+        <input required name="telefone" placeholder="(27) 99999-0000" />
+      </div>
+
+      <div class="form-group">
+        <label>Data inicial *</label>
+        <input type="date" name="data_evento" id="inputDataInicio" required />
+      </div>
+
+      <div class="form-group">
+        <label>Data final *</label>
+        <input type="date" name="data_fim" id="inputDataFim" required />
+      </div>
+
+      <div class="form-group">
+        <label>Período *</label>
+        <select name="periodo" id="selectPeriodo" required></select>
+      </div>
+
+      <div class="form-group">
+        <label>Finalidade do evento *</label>
+        <select name="finalidade" required>
+          <option value="">Selecione</option>
+          <option value="Reunião interna CBMES">Reunião interna CBMES</option>
+          <option value="Reunião entre órgãos">Reunião entre órgãos</option>
+          <option value="Treinamento / Curso">Treinamento / Curso</option>
+          <option value="Palestra / Seminário">Palestra / Seminário</option>
+          <option value="Cerimônia / Solenidade">Cerimônia / Solenidade</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Anexo (E-Docs) – Obrigatório para Solicitações EXTERNAS</label>
+        <input type="file" name="anexo_edocs" id="anexo_edocs" />
+      </div>
+
+      <div class="form-group" style="grid-column:1 / -1;">
+        <label>Observações adicionais</label>
+        <textarea name="observacoes" placeholder="Informações complementares, necessidades especiais etc."></textarea>
+      </div>
+    </form>
+
+    <div class="form-footer">
+      <button class="btn-outline" id="btnCancelarModal" type="button">Cancelar</button>
+      <button class="btn-primario" id="btnEnviarReserva" type="button">Enviar solicitação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de TERMOS DE USO -->
+<div id="modalTermos" class="modal-backdrop">
+  <div class="modal modal-termos">
+    <div class="modal-header">
+      <h3 class="modal-title">Termos de uso do auditório</h3>
+      <button id="btnFecharTermos" class="modal-close">&times;</button>
+    </div>
+
+    <p class="modal-sub">
+      Leia atentamente as orientações abaixo antes de confirmar sua solicitação de uso do auditório.
+    </p>
+
+    <div class="termos-texto">
+      <p><strong>1. Finalidade do uso</strong><br>
+        O auditório do QCG destina-se prioritariamente a atividades institucionais do Corpo de Bombeiros Militar do Espírito Santo
+        e eventos de interesse público, previamente autorizados pelo CAT.</p>
+
+      <p><strong>2. Horários</strong><br>
+        O solicitante deve respeitar rigorosamente os horários de início e término informados na solicitação,
+        incluindo o tempo necessário para montagem e desmontagem do evento.</p>
+
+      <p><strong>3. Responsabilidade do solicitante</strong><br>
+        O responsável indicado no formulário responderá pela adequada utilização do espaço, integridade do patrimônio,
+        equipamentos e instalações, bem como pela conduta dos participantes durante o evento.</p>
+
+      <p><strong>4. Proibições</strong><br>
+        Não é permitido:
+        <ul>
+          <li>Fumar no interior do auditório;</li>
+          <li>Consumir alimentos e bebidas, salvo autorização expressa;</li>
+          <li>Alterar a disposição de equipamentos fixos sem autorização;</li>
+          <li>Ultrapassar a capacidade máxima de público estabelecida para o local.</li>
+        </ul>
+      </p>
+
+      <p><strong>5. Cancelamentos e alterações</strong><br>
+        Qualquer alteração ou cancelamento deverá ser comunicado ao CAT com antecedência,
+        para que seja possível liberar o horário a outros interessados.</p>
+
+      <p><strong>6. Registro e aprovação</strong><br>
+        O envio desta solicitação não garante o uso do auditório. A utilização somente estará autorizada após análise
+        e confirmação formal por parte do CAT.</p>
+    </div>
+
+    <div class="termos-aceite">
+      <label>
+        <input type="checkbox" id="chkAceitoTermos">
+        Declaro que li e concordo com os termos de uso do ambiente.
+      </label>
+    </div>
+
+    <div class="form-footer">
+      <button class="btn-outline" id="btnCancelarTermos" type="button">Voltar</button>
+      <button class="btn-primario" id="btnConfirmarTermos" type="button" disabled>Confirmar solicitação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>
