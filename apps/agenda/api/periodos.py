@@ -7,8 +7,6 @@ PERIODOS = ["MANHA", "TARDE", "NOITE", "INTEGRAL"]
 
 def periodos_livres(request):
 
-    print(request.GET)
-
     data = request.GET.get("data")
     ambiente_id = request.GET.get("ambiente")
 

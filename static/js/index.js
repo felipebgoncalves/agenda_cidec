@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let calendar = null;
 
-  const AMBIENTE_PADRAO = 'AUDITORIO';
+  const AMBIENTE_PADRAO = '1';
   
   // =========================
   // Modais
@@ -110,14 +110,15 @@ document.addEventListener('DOMContentLoaded', function () {
       for (let d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) {
         const iso = d.toISOString().slice(0, 10);
 
-        const ambiente = (selectAmbienteReserva?.value || filtroAmbienteAgenda?.value || AMBIENTE_PADRAO).toUpperCase();
+        const ambiente = (selectAmbienteReserva?.value || filtroAmbienteAgenda?.value || AMBIENTE_PADRAO);
         const resp = await fetch(`${API_BASE}/periodos-livres?data=${iso}&ambiente=${encodeURIComponent(ambiente)}`);
         if (!resp.ok) {
           throw new Error('Erro ao consultar períodos livres');
         }
         const periodosDia = await resp.json();
 
-        const livresDia = new Set((periodosDia || []).map(p => p.id));
+        // const livresDia = new Set((periodosDia || []).map(p => p.id));
+        const livresDia = new Set(periodosDia.periodos || []);
 
         // interseção: só continua com os períodos que estão livres em TODOS os dias
         disponiveis = new Set(
@@ -229,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function carregarReservasNoCalendario() {
     try {
-      const ambienteSelecionado = (filtroAmbienteAgenda?.value || AMBIENTE_PADRAO).toUpperCase();
+      const ambienteSelecionado = (filtroAmbienteAgenda?.value || AMBIENTE_PADRAO);
       const resp = await fetch(`${API_BASE}/reservas-public?ambiente=${encodeURIComponent(ambienteSelecionado)}`);
       const reservas = await resp.json();
 
