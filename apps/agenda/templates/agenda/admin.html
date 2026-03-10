@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>CBMES – Painel Interno do Auditório</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/modal-transformar.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+
+</head>
+
+<body>
+
+  <header class="app-header">
+    <div>
+      <div class="app-header-title">Painel Interno – Agendamento do Auditório</div>
+      <div class="app-header-sub">Corpo de Bombeiros Militar do Espírito Santo – CAT / QCG</div>
+    </div>
+    <div class="tag">Uso restrito a pessoal autorizado</div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- ABAS SUPERIORES -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" data-target="secSolicitacoes">Solicitações</button>
+      <button class="tab-btn" data-target="secChecklists">Checklists (Check-IN / Check-OUT)</button>
+      <button class="tab-btn" data-target="secUsuarios">Usuários</button>
+    </div>
+
+    <!-- ABA 1: SOLICITAÇÕES (SEU CONTEÚDO ORIGINAL) -->
+    <section id="secSolicitacoes" class="panel card tab-section active">
+
+      <div class="panel-top">
+        <div>
+          <h2 class="panel-title">Solicitações de Uso do Auditório do CAT/CBMES</h2>
+          <div id="infoUsuario" class="info-analista">
+            Verificando usuário logado...
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="btnAlterarSenha" class="btn-header">Alterar senha</button>
+          <button id="btnLogout" class="btn-header btn-header-danger">Sair</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="filtroTipo">Tipo de solicitação:</label>
+          <select id="filtroTipo">
+            <option value="">Todos</option>
+            <option value="INTERNA">Interna (CBMES)</option>
+            <option value="EXTERNA">Externa</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtroAmbiente">Ambiente:</label>
+          <select id="filtroAmbiente">
+            <option value="">Todos</option>
+            <option value="AUDITORIO">Auditório</option>
+            <option value="CENTRO_OPERACOES">Centro de Operações</option>
+            <option value="SALA_CRISE">Sala de Crise</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtroStatus">Status:</label>
+          <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="APROVADA">Aprovada</option>
+            <option value="NEGADA">Negada</option>
+            <option value="CANCELADA">Cancelada</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="subtitle">
+        Reservas pendentes aparecem primeiro. Use os filtros acima para visualizar por tipo e status.
+      </p>
+
+      <div class="table-wrapper">
+        <table id="tabelaReservas">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data / Período</th>
+              <th>Ambiente</th>
+              <th>Instituição / Contato</th>
+              <th>Finalidade / Observações</th>
+              <th>Anexo</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- linhas preenchidas via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ABA 2: CHECKLISTS (NOVA) -->
+    <section id="secChecklists" class="panel card tab-section">
+
+      <div class="panel-top">
+        <div>
+          <h2 class="panel-title">Consulta de Check-IN / Check-OUT</h2>
+          <div class="info-analista">
+            Utilize os filtros abaixo para localizar registros de checklists.
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="filtroIdReserva">ID da reserva:</label>
+          <input type="number" id="filtroIdReserva">
+        </div>
+
+        <div class="filter-group">
+          <label for="filtroTipoSolicitacao">Tipo de solicitação:</label>
+          <select id="filtroTipoSolicitacao">
+            <option value="">Todos</option>
+            <option value="INTERNA">Interna</option>
+            <option value="EXTERNA">Externa</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Período da reserva:</label>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="date" id="filtroDataIni">
+            <span style="font-size:.75rem;">até</span>
+            <input type="date" id="filtroDataFim">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtroConcordouUso">Concordou com uso (Check-IN):</label>
+          <select id="filtroConcordouUso">
+            <option value="">Todos</option>
+            <option value="SIM">Sim</option>
+            <option value="NAO">Não</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtroCheckoutAlteracoes">Check-OUT com alterações?</label>
+          <select id="filtroCheckoutAlteracoes">
+            <option value="">Todos</option>
+            <option value="SIM">Sim</option>
+            <option value="NAO">Não</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <button type="button" id="btnBuscarChecklists" class="btn-header">
+            Buscar
+          </button>
+          <button type="button" id="btnLimparChecklists" class="btn-header btn-header-danger">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <p class="subtitle">
+        Os registros exibem se houve Check-IN, se houve concordância com as condições de uso
+        e se o Check-OUT foi realizado com alterações.
+      </p>
+
+      <div class="table-wrapper">
+        <table id="tabelaChecklists">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data inicial</th>
+              <th>Data final</th>
+              <th>Tipo</th>
+              <th>Período</th>
+              <th>Ambiente</th>
+              <th>Instituição</th>
+              <th>Responsável</th>
+              <th>Check-IN</th>
+              <th>Concordou uso</th>
+              <th>Check-OUT</th>
+              <th>Com alterações?</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaChecklistsBody">
+            <tr>
+              <td colspan="12" style="text-align:center;font-size:.85rem;color:#666;">
+                Use os filtros acima e clique em "Buscar" para listar os registros.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+
+    <!-- ABA 3: USUÁRIOS (NOVA) -->
+    <section id="secUsuarios" class="panel card tab-section">
+      <div class="panel-top">
+        <div>
+          <h2 class="panel-title">Gestão de usuários internos</h2>
+          <div class="info-analista">
+            Somente administradores podem cadastrar e gerenciar usuários.
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="usuarioNome">Nome:</label>
+          <input type="text" id="usuarioNome">
+        </div>
+        <div class="filter-group">
+          <label for="usuarioEmail">E-mail de login:</label>
+          <input type="email" id="usuarioEmail">
+        </div>
+        <div class="filter-group">
+          <label for="usuarioSenha">Senha:</label>
+          <input type="password" id="usuarioSenha" placeholder="Para edição, deixe em branco para manter">
+        </div>
+        <div class="filter-group">
+          <label><input type="checkbox" id="usuarioAdmin"> Administrador</label><br>
+          <label><input type="checkbox" id="usuarioAtivo" checked> Ativo</label>
+        </div>
+        <div class="form-group">
+          <label for="userEscopo">Escopo de atuação</label>
+          <select id="userEscopo" name="tipo_escopo" required>
+            <option value="AMBOS">Ambos (Interna e Externa)</option>
+            <option value="INTERNA">Somente Interna</option>
+            <option value="EXTERNA">Somente Externa</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <button type="button" id="btnSalvarUsuario" class="btn-header">Salvar</button>
+          <button type="button" id="btnNovoUsuario" class="btn-header btn-header-danger">Novo</button>
+        </div>
+
+      </div>
+
+      <div class="table-wrapper">
+        <table id="tabelaUsuarios">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Escopo</th>
+              <th>Admin</th>
+              <th>Ativo</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaUsuariosBody">
+            <tr>
+              <td colspan="6" style="text-align:center;font-size:.85rem;color:#666;">
+                Nenhum usuário carregado ainda.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- CONTAINER DO MODAL -->
+  <div id="modalTransformarUso" class="modal-backdrop"></div>
+
+
+  <!-- Script para alternar abas -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const sections = document.querySelectorAll('.tab-section');
+
+      tabButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const targetId = btn.getAttribute('data-target');
+
+          tabButtons.forEach(b => b.classList.remove('active'));
+          sections.forEach(sec => sec.classList.remove('active'));
+
+          btn.classList.add('active');
+          const sec = document.getElementById(targetId);
+          if (sec) sec.classList.add('active');
+        });
+      });
+    });
+  </script>
+
+  <script src="js/admin.js"></script>
+</body>
+
+</html>

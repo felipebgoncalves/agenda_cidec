@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login – Painel do Auditório CBMES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- CSS da página -->
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+
+<body>
+
+<div class="login-container">
+    <div class="login-card">
+
+        <h1 class="titulo">Sistema de Agendamento do Auditorio do CAT/CBMES</h1>
+        <p class="subtitulo">Acesse o portal interno usando suas credenciais.</p>
+
+        <div class="erro" id="msgErro"></div>
+
+        <form id="formLogin" class="form-login">
+
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-entrar">Entrar</button>
+        </form>
+
+        <button type="button" class="btn-esqueci" id="btnEsqueci">Esqueci minha senha</button>
+
+        <button type="button" class="btn-voltar" id="btnVoltar">
+    ⟵ Voltar para a página inicial
+        </button>
+
+    </div>
+</div>
+
+<script src="js/login.js"></script>
+</body>
+</html>
