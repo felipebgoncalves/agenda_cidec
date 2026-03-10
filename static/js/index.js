@@ -1,6 +1,10 @@
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
   const API_BASE = '/api';
+
+  await carregarAmbientes();
+
+  carregarReservasNoCalendario();
 
   // Elementos
   const modalBackdrop = document.getElementById('modalReserva');
@@ -73,6 +77,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function fecharModalTermos() {
     modalTermos.style.display = 'none';
+  }
+
+
+  // =========================
+  // Carrega Ambientes para o select do formulário e do filtro
+  // =========================
+  async function carregarAmbientes() {
+
+    const resp = await fetch('/api/ambientes');
+    const ambientes = await resp.json();
+
+    const selects = [
+      document.getElementById('selectAmbienteReserva'),
+      document.getElementById('filtroAmbienteAgenda')
+    ];
+
+    selects.forEach(select => {
+      if (!select) return;
+
+      select.innerHTML = '';
+
+      ambientes.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.nome;
+        select.appendChild(opt);
+      });
+    });
   }
 
   // =========================
@@ -347,10 +379,6 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Erro ao carregar reservas', err);
     }
   }
-
-
-
-  carregarReservasNoCalendario();
 
   // =========================
   // Envio da solicitação
