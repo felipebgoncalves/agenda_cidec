@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path("", include("apps.core.urls")),
     path('', include('apps.agenda.urls')),
+    path('api/', include('apps.agenda.api.urls')),
 
 ]
 

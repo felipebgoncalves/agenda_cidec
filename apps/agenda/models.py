@@ -1,16 +1,16 @@
 from django.db import models
 
 # Create your models here.
-class Room(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    active = models.BooleanField(default=True)
+class Ambiente(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+    ativo = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return self.nome
 
 
-class Reservation(models.Model):
+class Reserva(models.Model):
 
     class TipoSolicitacao(models.TextChoices):
         INTERNA = "INTERNA", "Interna"
@@ -21,10 +21,10 @@ class Reservation(models.Model):
         APPROVED = "APPROVED", "Aprovada"
         REJECTED = "REJECTED", "Rejeitada"
 
-    room = models.ForeignKey(
-        Room,
+    ambiente = models.ForeignKey(
+        Ambiente,
         on_delete=models.CASCADE,
-        related_name="reservations"
+        related_name="reservas"
     )
 
     tipo_solicitacao = models.CharField(
@@ -56,4 +56,4 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.room} - {self.data_inicio} ({self.status})"
+        return f"{self.ambiente} - {self.data_inicio} ({self.status})"

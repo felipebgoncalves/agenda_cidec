@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -11,7 +13,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
 
   <!-- CSS da página -->
-  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}"/>
 </head>
 <body>
 <header class="page-header">
@@ -35,8 +37,9 @@
     <div class="top-actions">
       <select id="filtroAmbienteAgenda">
         <option value="AUDITORIO">Auditório</option>
-        <option value="CENTRO_OPERACOES">Centro de Operações</option>
+        <option value="CENTRO_OPERACOES">Centro de Operações - COEDC</option>
         <option value="SALA_CRISE">Sala de Crise</option>
+        <option value="SALA_REUNIOES">Sala de Reuniões</option>
       </select>
       <button id="btnAbrirModal" class="btn-primario">+ Nova solicitação</button>
     </div>
@@ -49,21 +52,22 @@
 <div id="modalReserva" class="modal-backdrop">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">Nova Solicitação de Uso de Ambiente do CAT/CBMES</h3>
+      <h3 class="modal-title">Nova Solicitação de Uso de Ambiente CIDEC</h3>
       <button id="btnFecharModal" class="modal-close">&times;</button>
     </div>
 
     <p class="modal-sub">
-      Escolha a data e o período desejados e preencha os dados abaixo. Sua solicitação será analisada pela equipe do CAT/CBMES.
+      Escolha a data e o período desejados e preencha os dados abaixo. Sua solicitação será analisada pela Gerência Administrativa / CEPDEC.
     </p>
 
     <form id="formReserva" class="form-grid">
       <div class="form-group">
         <label>Ambiente *</label>
         <select name="ambiente" id="selectAmbienteReserva" required>
-          <option value="AUDITORIO">Auditório</option>
-          <option value="CENTRO_OPERACOES">Centro de Operações</option>
-          <option value="SALA_CRISE">Sala de Crise</option>
+          <option value="1">Auditório</option>
+          <option value="2">Centro de Operações</option>
+          <option value="3">Sala de Crise</option>
+          <option value="4">Sala de Reuniões</option>
         </select>
       </div>
 
@@ -71,7 +75,7 @@
         <label>Tipo de solicitação *</label>
         <select name="tipo_solicitacao" required>
           <option value="">Selecione</option>
-          <option value="INTERNA">Interna (CBMES)</option>
+          <option value="INTERNA">Interna (CEPDEC/CBMES)</option>
           <option value="EXTERNA">Externa (demais órgãos)</option>
         </select>
       </div>
@@ -108,14 +112,19 @@
 
       <div class="form-group">
         <label>Período *</label>
-        <select name="periodo" id="selectPeriodo" required></select>
+        <select name="periodo" id="selectPeriodo" required>
+          <option value="MANHA">Manhã (7h às 12h)</option>
+          <option value="TARDE">Tarde (13h às 18h)</option>
+          <option value="NOITE">Noite (19h às 22h)</option>
+          <option value="INTEGRAL">Integral (7h às 22h)</option>
+        </select>
       </div>
 
       <div class="form-group">
         <label>Finalidade do evento *</label>
         <select name="finalidade" required>
           <option value="">Selecione</option>
-          <option value="Reunião interna CBMES">Reunião interna CBMES</option>
+          <option value="Reunião interna CEPDEC/CBMES">Reunião interna CEPDEC/CBMES</option>
           <option value="Reunião entre órgãos">Reunião entre órgãos</option>
           <option value="Treinamento / Curso">Treinamento / Curso</option>
           <option value="Palestra / Seminário">Palestra / Seminário</option>
@@ -202,6 +211,6 @@
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-<script src="js/index.js"></script>
+<script src="{% static 'js/index.js' %}"></script>
 </body>
 </html>
