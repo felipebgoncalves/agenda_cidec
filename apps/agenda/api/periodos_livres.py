@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from apps.agenda.models import Ambiente, Reserva 
 
 
-PERIODOS = ["MANHA", "TARDE", "NOITE", "INTEGRAL"]
+PERIODOS = ["INTEGRAL", "MANHA", "TARDE", "NOITE"]
 
 
 def periodos_livres(request):
@@ -13,20 +13,30 @@ def periodos_livres(request):
     if not data or not ambiente_id:
         return JsonResponse({"error": "data e ambiente são obrigatórios"}, status=400)
 
-    try:
-        ambiente = Ambiente.objects.get(id=ambiente_id)
-    except Ambiente.DoesNotExist:
-        return JsonResponse({"error": "Ambiente não encontrado"}, status=404)
-
     reservas = Reserva.objects.filter(
-        ambiente=ambiente,
+        ambiente_id=ambiente_id,
         data_inicio__lte=data,
         data_fim__gte=data,
-        status="APPROVED"
+        status="APROVADA"
     )
 
     ocupados = reservas.values_list("periodo", flat=True)
 
-    livres = [p for p in PERIODOS if p not in ocupados]
+    # se existir INTEGRAL nada mais está disponível
+    if "INTEGRAL" in ocupados:
+        return JsonResponse({"periodos": []})
+
+    livres = []
+
+    for p in PERIODOS:
+
+        if p in ocupados:
+            continue
+
+        # INTEGRAL só pode se nenhum outro período estiver ocupado
+        if p == "INTEGRAL" and ocupados:
+            continue
+
+        livres.append(p)
 
     return JsonResponse({"periodos": livres})

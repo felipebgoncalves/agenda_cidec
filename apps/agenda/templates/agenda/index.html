@@ -21,7 +21,13 @@
     <div class="page-header-title">Sistema de Agendamento do Centro de Inteligencia de Defesa Civil – CIDEC</div>
     <div class="page-header-sub">Uso compartilhado dos espaços do CIDEC</div>
   </div>
-  <button id="btnAcessoInterno" class="btn-secundario">Acesso interno</button>
+  <a href="{% url 'agenda_login' %}">
+  <button class="btn-secundario">Acesso interno</button>
+  </a>
+
+  <!-- <button id="btnAcessoInterno" class="btn-secundario" onclick="location.href='{% url 'agenda_login' %}'">Acesso interno</button> -->
+  <!-- <button id="btnAcessoInterno" class="btn-secundario" data-url="{% url 'agenda_login' %}">Acesso interno</button> -->
+
 </header>
 
 <main class="calendar-wrapper">

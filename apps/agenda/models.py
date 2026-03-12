@@ -12,14 +12,31 @@ class Ambiente(models.Model):
 
 class Reserva(models.Model):
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["ambiente", "data_inicio", "data_fim"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ambiente", "data_inicio", "data_fim", "periodo"],
+                name="reserva_unica_por_periodo"
+            )
+        ]
+
     class TipoSolicitacao(models.TextChoices):
         INTERNA = "INTERNA", "Interna"
         EXTERNA = "EXTERNA", "Externa"
 
     class StatusReserva(models.TextChoices):
-        PENDING = "PENDING", "Pendente"
-        APPROVED = "APPROVED", "Aprovada"
-        REJECTED = "REJECTED", "Rejeitada"
+        PENDENTE = "PENDENTE", "Pendente"
+        APROVADA = "APROVADA", "Aprovada"
+        REJEITADA = "REJEITADA", "Rejeitada"
+
+    class Periodo(models.TextChoices):
+        INTEGRAL = "INTEGRAL", "Integral"
+        MANHA = "MANHA", "Manhã"
+        TARDE = "TARDE", "Tarde"
+        NOITE = "NOITE", "Noite"
 
     ambiente = models.ForeignKey(
         Ambiente,
@@ -38,8 +55,8 @@ class Reserva(models.Model):
     telefone = models.CharField(max_length=20)
     data_inicio = models.DateField()
     data_fim = models.DateField()
-    periodo = models.CharField(max_length=50)
-    finalidade = models.CharField(max_length=200)
+    periodo = models.CharField(max_length=50, choices=Periodo.choices)
+    finalidade = models.TextField()
     observacoes = models.TextField(blank=True)
     anexo_edocs = models.FileField(
         upload_to="anexos/",
@@ -50,7 +67,7 @@ class Reserva(models.Model):
     status = models.CharField(
         max_length=10,
         choices=StatusReserva.choices,
-        default=StatusReserva.PENDING
+        default=StatusReserva.PENDENTE
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,8 +1,12 @@
+const API_BASE = '/api';
+// ESTADO GLOBAL
+let calendar = null;
+let periodosSistema = [];
 
 document.addEventListener('DOMContentLoaded', async function () {
-  const API_BASE = '/api';
 
   await carregarAmbientes();
+  await carregarPeriodos();
 
   carregarReservasNoCalendario();
 
@@ -12,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const btnFecharModal = document.getElementById('btnFecharModal');
   const btnCancelarModal = document.getElementById('btnCancelarModal');
   const btnEnviar = document.getElementById('btnEnviarReserva');
-  const btnAcessoInterno = document.getElementById('btnAcessoInterno');
+  // const btnAcessoInterno = document.getElementById('btnAcessoInterno');
 
   const inputDataInicio = document.getElementById('inputDataInicio');
   const inputDataFim = document.getElementById('inputDataFim');
@@ -32,13 +36,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   inputDataInicio.min = hojeISO;
   inputDataFim.min = hojeISO;
 
-  // Períodos
-  const periodosPadrao = {
-    INTEGRAL: { label: 'Integral (08h às 18h)', inicio: '08:00', fim: '18:00' },
-    MANHA: { label: 'Manhã (08h às 12h)', inicio: '08:00', fim: '12:00' },
-    TARDE: { label: 'Tarde (13h às 17h)', inicio: '13:00', fim: '17:00' },
-    NOITE: { label: 'Noite (18h às 21h)', inicio: '18:00', fim: '21:00' }
-  };
 
   const ambientesPadrao = {
     AUDITORIO: 'Auditório',
@@ -47,9 +44,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     SALA_REUNIOES: 'Sala de Reuniões'
   };
 
-  let calendar = null;
-
   const AMBIENTE_PADRAO = '1';
+  
   
   // =========================
   // Modais
@@ -77,6 +73,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   function fecharModalTermos() {
     modalTermos.style.display = 'none';
+  }
+
+  // =========================
+  // Carrega Períodos
+  // =========================
+  async function carregarPeriodos() {
+
+    const resp = await fetch('/api/periodos');
+    periodosSistema = await resp.json();
   }
 
 
@@ -111,86 +116,48 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Buscar períodos livres para TODO o intervalo (data inicial -> data final)
   // =========================
   async function montarPeriodosLivresIntervalo() {
+
     selectPeriodo.innerHTML = '';
     selectPeriodo.disabled = true;
 
-    const iniStr = inputDataInicio.value;
-    const fimStr = inputDataFim.value || iniStr;
+    const data_inicio = inputDataInicio.value;
+    const data_fim = inputDataFim.value || data_inicio;
 
-    if (!iniStr) {
-      return;
-    }
+    const ambiente = selectAmbienteReserva.value;
 
-    const ini = new Date(iniStr + 'T00:00:00');
-    const fim = new Date(fimStr + 'T00:00:00');
+    const resp = await fetch(
+      `/api/periodos-livres-intervalo?data_inicio=${data_inicio}&data_fim=${data_fim}&ambiente=${ambiente}`
+    );
 
-    if (isNaN(ini) || isNaN(fim)) {
-      return;
-    }
+    const dados = await resp.json();
 
-    if (fim < ini) {
-      // o próprio código já trata isso nos eventos de change, aqui só garantimos
-      return;
-    }
+    const livres = dados.periodos || [];
 
-    // Todos os IDs de período que o sistema conhece
-    const todosIds = ['INTEGRAL', 'MANHA', 'TARDE', 'NOITE'];
-    let disponiveis = new Set(todosIds);
+    if (!livres.length) {
 
-    try {
-      // percorre dia a dia do intervalo
-      for (let d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) {
-        const iso = d.toISOString().slice(0, 10);
-
-        const ambiente = (selectAmbienteReserva?.value || filtroAmbienteAgenda?.value || AMBIENTE_PADRAO);
-        const resp = await fetch(`${API_BASE}/periodos-livres?data=${iso}&ambiente=${encodeURIComponent(ambiente)}`);
-        if (!resp.ok) {
-          throw new Error('Erro ao consultar períodos livres');
-        }
-        const periodosDia = await resp.json();
-
-        // const livresDia = new Set((periodosDia || []).map(p => p.id));
-        const livresDia = new Set(periodosDia.periodos || []);
-
-        // interseção: só continua com os períodos que estão livres em TODOS os dias
-        disponiveis = new Set(
-          [...disponiveis].filter(id => livresDia.has(id))
-        );
-
-        // se em algum dia não sobrou nada, já pode parar
-        if (disponiveis.size === 0) break;
-      }
-
-      if (disponiveis.size === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'Nenhum horário disponível para todo o intervalo selecionado';
-        selectPeriodo.appendChild(opt);
-        return;
-      }
-
-      // monta as opções com base no periodosPadrao
-      todosIds.forEach(id => {
-        if (disponiveis.has(id)) {
-          const conf = periodosPadrao[id];
-          const opt = document.createElement('option');
-          opt.value = id;
-          opt.textContent = conf ? conf.label : id;
-          selectPeriodo.appendChild(opt);
-        }
-      });
-
-      selectPeriodo.disabled = false;
-    } catch (err) {
-      console.error('Erro ao carregar períodos livres', err);
       const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'Erro ao carregar períodos.';
+      opt.textContent = 'Nenhum horário disponível para o intervalo';
       selectPeriodo.appendChild(opt);
+
+      return;
     }
+
+    livres.forEach(id => {
+
+      const periodo = periodosSistema.find(p => p.id === id);
+
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = periodo.label;
+
+      selectPeriodo.appendChild(opt);
+
+    });
+
+    selectPeriodo.disabled = false;
   }
-
-
+ 
+  
   // =========================
   // Calendário
   // =========================
@@ -261,124 +228,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
   async function carregarReservasNoCalendario() {
+
     try {
-      const ambienteSelecionado = (filtroAmbienteAgenda?.value || AMBIENTE_PADRAO);
-      const resp = await fetch(`${API_BASE}/reservas-public?ambiente=${encodeURIComponent(ambienteSelecionado)}`);
-      const reservas = await resp.json();
 
-      if (!Array.isArray(reservas)) {
-        console.warn('Resposta não é um array');
-        return;
-      }
+      const ambiente = document.getElementById("filtroAmbienteAgenda").value;
 
-      const events = reservas
-        .filter(r => !['NEGADA', 'CANCELADA'].includes((r.status || '').toUpperCase()))
-        .map(r => {
-          const inicioISO = normalizarDataISO(r.data_evento);
-          const fimISO = normalizarDataISO(r.data_fim || r.data_evento);
-
-          if (!inicioISO) return null;
-
-          const statusUpper = (r.status || '').toUpperCase();
-
-          // 🔹 Função auxiliar pra normalizar o texto (remove acento, deixa maiúsculo, tira espaços)
-          const normalizarTexto = (txt) =>
-            (txt || '')
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .toUpperCase()
-              .trim();
-
-          // 🔹 Detecta se é o bloqueio interno "Em uso da Corporação"
-          const isUsoCorp = normalizarTexto(r.finalidade).includes('EM USO DA CORPORACAO');
-
-          // Cores padrão (aprovada = vermelho, pendente = amarelo)
-          let cor;
-          let textoCor;
-
-          if (statusUpper === 'APROVADA') {
-            // 🔴 Aprovada → vermelho, texto branco
-            cor = '#c71c22';
-            textoCor = '#ffffff';
-          } else {
-            // 🟡 Pendente → amarelo, texto escuro
-            cor = '#f6c344';
-            textoCor = '#111010ff';
-          }
-
-          // end exclusivo para eventos allDay
-          const endExclusive = somarUmDia(fimISO);
-
-          // Label do período
-          const periodoLabel = periodosPadrao[r.periodo]?.label || r.periodo || '';
-          const ambienteLabel = ambientesPadrao[r.ambiente] || r.ambiente || 'Auditório';
-
-          // Título do evento
-          let titulo;
-
-          if (isUsoCorp) {
-            // 🔵 Caso especial: uso interno da corporação
-            titulo = `${ambienteLabel} – Em uso da Corporação` + (periodoLabel ? ` (${periodoLabel})` : '');
-            cor = '#0d6efd';      // azul
-            textoCor = '#ffffff'; // texto branco
-          } else {
-            // Comportamento normal
-            titulo =
-              `${ambienteLabel} – ${statusUpper === 'APROVADA' ? 'Confirmado' : 'Solicitado'} – ${r.instituicao}` +
-              (periodoLabel ? ` (${periodoLabel})` : '');
-          }
-
-          // 🔹 Texto do tooltip (multi-linha)
-          const tipoLabel = (r.tipo_solicitacao || '').toUpperCase() === 'EXTERNA'
-            ? 'Externa'
-            : 'Interna';
-
-          // 🔹 Função para converter YYYY-MM-DD → DD/MM/YYYY
-          const formatarDataBR = (iso) => {
-            if (!iso) return '';
-            const partes = iso.split('-');
-            return `${partes[2]}/${partes[1]}/${partes[0]}`;
-          };
-
-          const dataIniBR = inicioISO ? formatarDataBRFromISO(inicioISO) : null;
-          const dataFimBR = fimISO ? formatarDataBRFromISO(fimISO) : null;
-
-
-          const linhasTooltip = [
-            `Status: ${statusUpper === 'APROVADA' ? 'Confirmado' : 'Solicitado'}`,
-            `Tipo: ${tipoLabel}`,
-            r.instituicao ? `Instituição: ${r.instituicao}` : null,
-            r.responsavel ? `Responsável: ${r.responsavel}` : null,
-            `Ambiente: ${ambienteLabel}`,
-            periodoLabel ? `Período: ${periodoLabel}` : null,
-            dataIniBR ? `Data inicial: ${dataIniBR}` : null,
-            dataFimBR ? `Data final: ${dataFimBR}` : null
-          ].filter(Boolean);
-
-
-          const tooltipText = linhasTooltip.join('\n');
-
-          return {
-            title: titulo,
-            start: inicioISO,
-            end: endExclusive,
-            allDay: true,
-            display: 'block',
-            color: cor,
-            textColor: textoCor,
-            extendedProps: {
-              tooltip: tooltipText
-            }
-          };
-        })
-        .filter(Boolean);
+      const resp = await fetch(`/api/reservas-public?ambiente=${ambiente}`);
+      const eventos = await resp.json();
 
       calendar.removeAllEvents();
-      calendar.addEventSource(events);
+      calendar.addEventSource(eventos);
+
     } catch (err) {
-      console.error('Erro ao carregar reservas', err);
+      console.error("Erro ao carregar reservas", err);
     }
   }
+
 
   // =========================
   // Envio da solicitação
@@ -393,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (fim < ini) {
       alert('A data final não pode ser anterior à data inicial.');
       return;
-    }
+    } 
 
     // 🔹 NOVO: regra de anexo obrigatório para solicitações EXTERNAS
     const tipo = (formData.get('tipo_solicitacao') || '').toUpperCase();
@@ -491,11 +356,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (e.target === modalTermos) fecharModalTermos();
   });
 
-  if (btnAcessoInterno) {
-    btnAcessoInterno.addEventListener('click', () =>
-      window.location.href = '/login.html'
-    );
-  }
+// btnAcessoInterno.addEventListener('click', () => {
+//   window.location.href = btnAcessoInterno.dataset.url;
+// });
 
   if (selectAmbienteReserva) {
     selectAmbienteReserva.addEventListener('change', () => {
